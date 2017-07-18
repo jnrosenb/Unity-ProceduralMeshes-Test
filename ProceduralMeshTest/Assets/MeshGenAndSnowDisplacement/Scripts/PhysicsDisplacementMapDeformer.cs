@@ -35,36 +35,15 @@ public class PhysicsDisplacementMapDeformer : MonoBehaviour
 				displacementMap.SetPixel(x, y, Color.white);
 			}
 		}
-		//displacementMap.wrapMode = UnityEngine.TextureWrapMode.Clamp;
+		/*displacementMap.wrapMode = UnityEngine.TextureWrapMode.Clamp;//*/
 		displacementMap.Apply ();
 
 		dispTexID = Shader.PropertyToID ("_DispTex");
 		mainTexID = Shader.PropertyToID ("_MainTex");
 
 		material.SetTexture (dispTexID, displacementMap);
-		material.SetTexture (mainTexID, displacementMap);
 	}
 
-	void Start()
-	{
-//		planeMesh = GetComponent<generatePlaneMesh> ();
-//
-//		displacementMap = new Texture2D (size, size, TextureFormat.ARGB32, true);
-//		for(int x = 0; x < size; x++)
-//		{
-//			for(int y = 0; y < size; y++)
-//			{
-//				displacementMap.SetPixel(x, y, Color.black);
-//			}
-//		}
-//		displacementMap.Apply ();
-//
-//		dispTexID = Shader.PropertyToID ("_DispTex");
-//		mainTexID = Shader.PropertyToID ("_MainTex");
-//
-//		material.SetTexture (dispTexID, displacementMap);
-//		material.SetTexture (mainTexID, displacementMap);
-	}
 
 	void OnCollisionStay(Collision col)
 	{
@@ -81,33 +60,36 @@ public class PhysicsDisplacementMapDeformer : MonoBehaviour
 			Vector2 textureContact = new Vector2 ((int)(nContact.x * size), (int)(nContact.z * size));
 
 			//-------------REEMPLAZAR POR CODIGO INTELIGENTE CON RADIO DINAMICO:
-			Color pixelColor = displacementMap.GetPixel ((int)textureContact.x, (int)textureContact.y);
-			if (pixelColor.r > 0) 
+			float amount = (2 * pixelRadius + 1);
+			for (int i = 0; i < amount; i++)
 			{
-				Color c1 = new Color (pixelColor.r - 30, pixelColor.g - 30, pixelColor.b - 30);
-				Color c2 = new Color (pixelColor.r - 10, pixelColor.g - 10, pixelColor.b - 10);
+				for (int j = 0; j < amount; j++)
+				{
+					Vector2 chunkDictCoords = new Vector2 (textureContact.x + i - pixelRadius, textureContact.y + j - pixelRadius);
+					float distanceToCenter = Vector2.Distance (chunkDictCoords, textureContact);
+					if (distanceToCenter <= pixelRadius)
+					{
+						Color pixelColor = displacementMap.GetPixel ((int)chunkDictCoords.x, (int)chunkDictCoords.y);
+						if (pixelColor.r > 0)
+						{
+							//Color defined by proximity to center:
+							Color colorf = new Color();
+							colorf.r = Mathf.Max(0f, pixelColor.r / distanceToCenter);
+							colorf.g = Mathf.Max(0f, pixelColor.g / distanceToCenter);
+							colorf.b = Mathf.Max(0f, pixelColor.b / distanceToCenter);
 
-				if (c1.r < 0)
-					c1 = Color.black;
-				if (c2.r < 0)
-					c2 = Color.black;
-				
-				displacementMap.SetPixel ((int)textureContact.x, (int)textureContact.y, c1);
-
-				displacementMap.SetPixel ((int)textureContact.x + 1, (int)textureContact.y + 1, c2);
-				displacementMap.SetPixel ((int)textureContact.x + 1, (int)textureContact.y - 1, c2);
-				displacementMap.SetPixel ((int)textureContact.x + 1, (int)textureContact.y + 0, c2);
-				displacementMap.SetPixel ((int)textureContact.x + 0, (int)textureContact.y + 1, c2);
-				displacementMap.SetPixel ((int)textureContact.x + 0, (int)textureContact.y - 1, c2);
-				displacementMap.SetPixel ((int)textureContact.x - 1, (int)textureContact.y + 1, c2);
-				displacementMap.SetPixel ((int)textureContact.x - 1, (int)textureContact.y - 1, c2);
-				displacementMap.SetPixel ((int)textureContact.x - 1, (int)textureContact.y + 0, c2);
+							displacementMap.SetPixel ((int)chunkDictCoords.x, (int)chunkDictCoords.y, colorf);
+						}
+					}
+				}
 			}
-			//-------------
 
 			displacementMap.Apply ();
 			material.SetTexture (dispTexID, displacementMap);
 			material.SetTexture (mainTexID, displacementMap);
+
+//			this.planeMesh.mc.sharedMesh = null;
+//			this.planeMesh.mc.sharedMesh = this.planeMesh.Mesh;
 		}
 		else
 			Debug.LogWarning("Plane deformer was not correctly referenced");

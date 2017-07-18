@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Tester : MonoBehaviour 
 {
+	public int pixelRadius = 5;
 	private RaycastHit Hit;
 	private LineRenderer line;
 
@@ -59,30 +60,24 @@ public class Tester : MonoBehaviour
 				Vector2 textureContact = new Vector2 ((int)(nContact.x * size), (int)(nContact.z * size));
 
 				//displacementMap.SetPixel ((int)textureContact.x, (int)textureContact.y, Color.black);
+
 				//-------------REEMPLAZAR POR CODIGO INTELIGENTE CON RADIO DINAMICO:
-				Color pixelColor = displacementMap.GetPixel ((int)textureContact.x, (int)textureContact.y);
-				if (pixelColor.r > 0) 
+				float amount = (2 * pixelRadius + 1);
+				for (int i = 0; i < amount; i++)
 				{
-					Color c1 = new Color (pixelColor.r - 30, pixelColor.g - 30, pixelColor.b - 30);
-					Color c2 = new Color (pixelColor.r - 10, pixelColor.g - 10, pixelColor.b - 10);
-
-					if (c1.r < 0)
-						c1 = Color.black;
-					if (c2.r < 0)
-						c2 = Color.black;
-
-					displacementMap.SetPixel ((int)textureContact.x, (int)textureContact.y, c1);
-
-					displacementMap.SetPixel ((int)textureContact.x + 1, (int)textureContact.y + 1, c2);
-					displacementMap.SetPixel ((int)textureContact.x + 1, (int)textureContact.y - 1, c2);
-					displacementMap.SetPixel ((int)textureContact.x + 1, (int)textureContact.y + 0, c2);
-					displacementMap.SetPixel ((int)textureContact.x + 0, (int)textureContact.y + 1, c2);
-					displacementMap.SetPixel ((int)textureContact.x + 0, (int)textureContact.y - 1, c2);
-					displacementMap.SetPixel ((int)textureContact.x - 1, (int)textureContact.y + 1, c2);
-					displacementMap.SetPixel ((int)textureContact.x - 1, (int)textureContact.y - 1, c2);
-					displacementMap.SetPixel ((int)textureContact.x - 1, (int)textureContact.y + 0, c2);
+					for (int j = 0; j < amount; j++)
+					{
+						Vector2 chunkDictCoords = new Vector2 (textureContact.x + i - pixelRadius, textureContact.y + j - pixelRadius);
+						if (Vector2.Distance (chunkDictCoords, textureContact) <= pixelRadius)
+						{
+							Color pixelColor = displacementMap.GetPixel ((int)chunkDictCoords.x, (int)chunkDictCoords.y);
+							if (pixelColor.r > 0)
+							{
+								displacementMap.SetPixel ((int)chunkDictCoords.x, (int)chunkDictCoords.y, new Color (pixelColor.r - 10, pixelColor.g - 10, pixelColor.b - 10));
+							}
+						}
+					}
 				}
-				//-------------
 
 				displacementMap.Apply ();
 				material.SetTexture (dispTexID, displacementMap);

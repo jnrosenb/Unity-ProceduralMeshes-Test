@@ -57,12 +57,12 @@ public class generatePlaneMesh : MonoBehaviour
 		//gameObject.SendMessage ("planeRegeneration");
 	}
 
-//	//Experimento:
-//	void Update()
-//	{
+	//Experimento:
+	void Update()
+	{
 //		this.mc.sharedMesh = null;
 //		this.mc.sharedMesh = mf.mesh;
-//	}
+	}
 
 	Mesh GenerateMesh()
 	{

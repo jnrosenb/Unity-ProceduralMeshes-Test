@@ -32,8 +32,8 @@ public class DeformableMesh : MonoBehaviour
 	void Update()
 	{
 		//Experimento modificar collider en real time (EN PAUSA)-
-		//planeGenerator.mc.sharedMesh = null;
-		//planeGenerator.mc.sharedMesh = planeGenerator.mesh;
+		planeGenerator.mc.sharedMesh = null;
+		planeGenerator.mc.sharedMesh = planeGenerator.mesh;
 
 		planeGenerator.mesh.SetVertices (modifiedVertices);	
 	}
